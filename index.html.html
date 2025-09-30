@@ -3,22 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Priorização - Hunter Assessoria</title>
+    <title>Dashboard de Priorização</title>
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
-    <!-- SheetJS para Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #0A070A;
@@ -26,7 +19,7 @@
             padding: 20px;
             color: #FFFFFF;
         }
-
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -35,98 +28,102 @@
             padding: 30px;
             box-shadow: 0 20px 40px rgba(10, 7, 10, 0.3);
         }
-
+        
         .header {
             text-align: center;
             margin-bottom: 30px;
             border-bottom: 3px solid #0A070A;
             padding-bottom: 20px;
         }
-
+        
         .header h1 {
             color: #0A070A;
             font-size: 2.5em;
             margin-bottom: 10px;
         }
-
+        
         .header p {
             color: #666;
             font-size: 1.1em;
         }
-
-        .connection-status {
+        
+        .status {
             text-align: center;
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 20px;
             font-weight: 600;
-        }
-
-        .status-connected {
             background: #0A070A;
             color: #FFFFFF;
         }
-
-        .status-disconnected {
-            background: #666;
-            color: #FFFFFF;
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
-
+        
+        .stat-card {
+            background: #0A070A;
+            color: #FFFFFF;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: #ddd;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
         .form-section {
             background: #0A070A;
             color: #FFFFFF;
             padding: 25px;
             border-radius: 10px;
             margin-bottom: 30px;
-            border: 2px solid #0A070A;
         }
-
-        .form-section h3 {
-            color: #FFFFFF;
-        }
-
+        
         .form-row {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-            align-items: end;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
         }
-
+        
         .form-group {
             display: flex;
             flex-direction: column;
         }
-
+        
         .form-group label {
             font-weight: 600;
-            color: #FFFFFF;
             margin-bottom: 8px;
-            font-size: 0.95em;
+            font-size: 0.9em;
         }
-
+        
         .form-group input, .form-group select, .form-group textarea {
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #666;
             border-radius: 8px;
             font-size: 14px;
-            transition: border-color 0.3s;
             background: #FFFFFF;
             color: #0A070A;
         }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #0A070A;
-            box-shadow: 0 0 0 2px rgba(10, 7, 10, 0.2);
-        }
-
+        
         .form-group textarea {
             resize: vertical;
             min-height: 60px;
         }
-
-        .add-btn {
+        
+        .btn {
             background: #0A070A;
             color: #FFFFFF;
             border: 2px solid #0A070A;
@@ -136,135 +133,77 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-
-        .add-btn:hover {
+        
+        .btn:hover {
             background: #FFFFFF;
             color: #0A070A;
-            transform: translateY(-2px);
         }
-
-        .add-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        
+        .btn-secondary {
+            background: #666;
+            border: 2px solid #666;
         }
-
-        .table-container {
-            overflow-x: auto;
-            margin-top: 20px;
-        }
-
+        
         table {
             width: 100%;
             border-collapse: collapse;
             background: #FFFFFF;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(10, 7, 10, 0.15);
             border: 2px solid #0A070A;
         }
-
+        
         thead {
             background: #0A070A;
             color: #FFFFFF;
         }
-
-        tbody tr {
-            color: #0A070A;
-        }
-
-        tbody tr:hover {
-            background-color: #f5f5f5;
-        }
-
+        
         th, td {
-            padding: 15px 12px;
+            padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-
-        th {
-            font-weight: 600;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .priority-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85em;
-            text-align: center;
-        }
-
-        .priority-churn { background: #0A070A; color: #FFFFFF; border: 2px solid #FFFFFF; }
-        .priority-critical { background: #FFFFFF; color: #0A070A; border: 2px solid #0A070A; }
-        .priority-high { background: #0A070A; color: #FFFFFF; border: 1px solid #666; }
-        .priority-medium { background: #FFFFFF; color: #0A070A; border: 1px solid #0A070A; }
-        .priority-low { background: #666; color: #FFFFFF; }
-
-        .score-display {
-            font-size: 1.2em;
-            font-weight: bold;
+        
+        tbody tr {
             color: #0A070A;
-            text-align: center;
         }
-
+        
+        tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        
         .area-tag {
             background: #0A070A;
             color: #FFFFFF;
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.8em;
-            font-weight: 500;
         }
-
-        .dependency-indicator {
+        
+        .priority-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
             font-size: 0.85em;
-            padding: 3px 6px;
-            border-radius: 3px;
         }
-
-        .dep-blocks { background: #0A070A; color: #FFFFFF; }
-        .dep-depends { background: #666; color: #FFFFFF; }
-        .dep-none { background: #ddd; color: #0A070A; }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        
+        .priority-churn { background: #0A070A; color: #FFFFFF; }
+        .priority-critical { background: #FFFFFF; color: #0A070A; border: 2px solid #0A070A; }
+        .priority-high { background: #0A070A; color: #FFFFFF; }
+        .priority-medium { background: #FFFFFF; color: #0A070A; border: 1px solid #0A070A; }
+        .priority-low { background: #666; color: #FFFFFF; }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85em;
+            cursor: pointer;
+            border: 2px solid transparent;
         }
-
-        .stat-card {
-            background: #0A070A;
-            color: #FFFFFF;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            border: 2px solid #0A070A;
-            box-shadow: 0 2px 10px rgba(10, 7, 10, 0.15);
-        }
-
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #FFFFFF;
-        }
-
-        .stat-label {
-            color: #ddd;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-
-        .description-cell {
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
+        
+        .status-todo { background: #FFFFFF; color: #0A070A; border: 2px solid #0A070A; }
+        .status-doing { background: #0A070A; color: #FFFFFF; }
+        .status-done { background: #666; color: #FFFFFF; }
+        
         .delete-btn {
             background: #0A070A;
             color: #FFFFFF;
@@ -273,86 +212,12 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.8em;
-            transition: all 0.3s;
         }
-
-        .delete-btn:hover {
-            background: #FFFFFF;
-            color: #0A070A;
-            border: 1px solid #0A070A;
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.85em;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
-        }
-
-        .status-todo { 
-            background: #FFFFFF; 
-            color: #0A070A;
-            border: 2px solid #0A070A; 
-        }
-
-        .status-doing { 
-            background: #0A070A; 
-            color: #FFFFFF;
-            border: 2px solid #666; 
-        }
-
-        .status-done { 
-            background: #666; 
-            color: #FFFFFF;
-            border: 2px solid #666; 
-        }
-
-        .status-badge:hover {
-            transform: scale(1.05);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-
-        .date-warning {
-            color: #0A070A;
-            font-weight: bold;
-            background: #FFFFFF;
-            padding: 2px 6px;
-            border-radius: 3px;
-            border: 1px solid #0A070A;
-        }
-
-        .date-overdue {
-            color: #FFFFFF;
-            font-weight: bold;
-            background: #0A070A;
-            padding: 2px 6px;
-            border-radius: 3px;
-            border: 2px solid #666;
-        }
-
-        .date-today {
-            color: #0A070A;
-            font-weight: bold;
-            background: #FFFFFF;
-            padding: 2px 6px;
-            border-radius: 3px;
-            border: 2px solid #0A070A;
-        }
-
+        
         .loading {
             text-align: center;
             padding: 20px;
             color: #0A070A;
-            font-size: 1.2em;
         }
     </style>
 </head>
@@ -360,17 +225,15 @@
     <div class="container">
         <div class="header">
             <h1>🎯 Dashboard de Priorização</h1>
-            <p>Sistema inteligente de priorização de demandas por cliente</p>
+            <p>Sistema inteligente de priorização de demandas</p>
         </div>
 
-        <div id="connectionStatus" class="connection-status status-connected">
-            ✅ Conectado ao Firebase - Dados salvos automaticamente
-        </div>
+        <div id="status" class="status">✅ Conectado ao Firebase</div>
 
-        <div class="stats" id="stats">
+        <div class="stats">
             <div class="stat-card">
                 <div class="stat-number" id="totalTasks">0</div>
-                <div class="stat-label">Total de Demandas</div>
+                <div class="stat-label">Total</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="todoTasks">0</div>
@@ -387,16 +250,15 @@
         </div>
 
         <div class="form-section">
-            <h3 style="margin-bottom: 20px; color: #FFFFFF;">➕ Adicionar Nova Demanda</h3>
+            <h3 style="margin-bottom: 20px;">➕ Adicionar Nova Demanda</h3>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="cliente">Cliente</label>
+                    <label>Cliente</label>
                     <input type="text" id="cliente" placeholder="Nome do cliente">
                 </div>
-                
                 <div class="form-group">
-                    <label for="area">Área Responsável</label>
+                    <label>Área</label>
                     <select id="area">
                         <option value="">Selecione...</option>
                         <option value="Atendimento">Atendimento</option>
@@ -407,9 +269,8 @@
                         <option value="Programação">Programação</option>
                     </select>
                 </div>
-                
                 <div class="form-group">
-                    <label for="criticidade">Criticidade</label>
+                    <label>Criticidade</label>
                     <select id="criticidade">
                         <option value="">Selecione...</option>
                         <option value="10">🚨 Churn (10 pts)</option>
@@ -418,66 +279,60 @@
                         <option value="1">Normal (1 pt)</option>
                     </select>
                 </div>
-
                 <div class="form-group">
-                    <label for="dependencia">Dependência</label>
+                    <label>Dependência</label>
                     <select id="dependencia">
                         <option value="0">Sem dependência</option>
-                        <option value="3">Bloqueia outras tarefas (+3)</option>
-                        <option value="1">Depende de outra área (+1)</option>
+                        <option value="3">Bloqueia outras (+3)</option>
+                        <option value="1">Depende de outra (+1)</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group" style="grid-column: span 2;">
-                    <label for="descricao">Descrição do Problema</label>
-                    <textarea id="descricao" placeholder="Descreva o problema ou solicitação em detalhes..."></textarea>
+                    <label>Descrição</label>
+                    <textarea id="descricao" placeholder="Descreva o problema..."></textarea>
                 </div>
-                
                 <div class="form-group">
-                    <label for="responsavel">Responsável</label>
-                    <input type="text" id="responsavel" placeholder="Nome do responsável">
+                    <label>Responsável</label>
+                    <input type="text" id="responsavel" placeholder="Nome">
                 </div>
-                
                 <div class="form-group">
-                    <label for="dataEntrega">Data Limite</label>
+                    <label>Data Limite</label>
                     <input type="date" id="dataEntrega">
                 </div>
             </div>
 
             <div style="text-align: center; margin-top: 20px; display: flex; gap: 15px; justify-content: center;">
-                <button class="add-btn" id="addBtn" onclick="addTask()">Adicionar Demanda</button>
-                <button class="add-btn" style="background: #666; color: #FFFFFF; border: 2px solid #666;" onclick="exportToExcel()">📊 Exportar para Excel</button>
+                <button class="btn" onclick="addTask()">Adicionar Demanda</button>
+                <button class="btn btn-secondary" onclick="exportToExcel()">📊 Exportar Excel</button>
             </div>
         </div>
 
-        <div class="table-container">
-            <div id="loading" class="loading">Carregando dados...</div>
-            <table id="taskTable" style="display: none;">
+        <div id="loading" class="loading">Carregando...</div>
+        <div id="tableContainer" style="display: none;">
+            <table>
                 <thead>
                     <tr>
-                        <th>Posição</th>
+                        <th>#</th>
                         <th>Cliente</th>
                         <th>Área</th>
                         <th>Criticidade</th>
-                        <th>Dependência</th>
                         <th>Descrição</th>
                         <th>Responsável</th>
-                        <th>Data Limite</th>
-                        <th>Pontuação</th>
+                        <th>Data</th>
+                        <th>Pontos</th>
                         <th>Status</th>
-                        <th>Ações</th>
+                        <th>Ação</th>
                     </tr>
                 </thead>
-                <tbody id="tasksTable">
-                </tbody>
+                <tbody id="tasksTable"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDNNp8JlkX9Lnzwy8rc8The_5xSMsKDc9s",
             authDomain: "dash--priorizacao-demandas.firebaseapp.com",
@@ -487,156 +342,44 @@
             appId: "1:876629953802:web:8ea7b743fa27b38718bef3"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
         let tasks = [];
 
-        // Palavras-chave para análise automática
-        const keywords = {
-            urgency: ['parado', 'não funciona', 'erro', 'travado', 'quebrado', 'down'],
-            timeline: ['evento', 'lançamento', 'prazo', 'deadline', 'amanhã', 'hoje', 'urgente'],
-            client_impact: ['cliente reclamou', 'insatisfeito', 'cancelamento', 'churn', 'reclamação', 'raiva'],
-            priority: ['urgente', 'asap', 'emergência', 'crítico', 'imediato']
-        };
-
-        // Carregar tarefas do Firebase em tempo real
         db.collection('tasks').onSnapshot((snapshot) => {
             tasks = [];
             snapshot.forEach((doc) => {
-                const data = doc.data();
-                tasks.push({
-                    id: doc.id,
-                    ...data,
-                    created: data.created ? data.created.toDate() : new Date()
-                });
+                tasks.push({ id: doc.id, ...doc.data() });
             });
-            
             document.getElementById('loading').style.display = 'none';
-            document.getElementById('taskTable').style.display = 'table';
+            document.getElementById('tableContainer').style.display = 'block';
             updateDisplay();
-        }, (error) => {
-            console.error('Erro ao carregar dados:', error);
-            document.getElementById('connectionStatus').className = 'connection-status status-disconnected';
-            document.getElementById('connectionStatus').textContent = '❌ Erro de conexão - Verifique o Firebase';
         });
 
-        function calculateScore(criticidade, dependencia, descricao) {
-            let score = parseInt(criticidade) + parseInt(dependencia);
-            
-            if (descricao) {
-                const desc = descricao.toLowerCase();
-                
-                if (keywords.urgency.some(word => desc.includes(word))) {
-                    score += 2;
-                }
-                
-                if (keywords.timeline.some(word => desc.includes(word))) {
-                    score += 1;
-                }
-                
-                if (keywords.client_impact.some(word => desc.includes(word))) {
-                    score += 2;
-                }
-                
-                if (keywords.priority.some(word => desc.includes(word))) {
-                    score += 1;
-                }
-            }
-            
+        function calculateScore(crit, dep, desc) {
+            let score = parseInt(crit) + parseInt(dep);
+            const d = desc.toLowerCase();
+            if (/parado|erro|travado/.test(d)) score += 2;
+            if (/urgente|asap|evento/.test(d)) score += 1;
+            if (/cliente reclamou|churn/.test(d)) score += 2;
             return score;
         }
 
-        function getPriorityClass(score) {
-            if (score >= 15) return 'priority-churn';
-            if (score >= 10) return 'priority-critical';
-            if (score >= 7) return 'priority-high';
-            if (score >= 4) return 'priority-medium';
-            return 'priority-low';
-        }
-
         function getPriorityLabel(score) {
-            if (score >= 15) return '🚨 CHURN';
-            if (score >= 10) return 'CRÍTICO';
-            if (score >= 7) return 'ALTO';
-            if (score >= 4) return 'MÉDIO';
-            return 'BAIXO';
+            if (score >= 15) return { label: '🚨 CHURN', class: 'priority-churn' };
+            if (score >= 10) return { label: 'CRÍTICO', class: 'priority-critical' };
+            if (score >= 7) return { label: 'ALTO', class: 'priority-high' };
+            if (score >= 4) return { label: 'MÉDIO', class: 'priority-medium' };
+            return { label: 'BAIXO', class: 'priority-low' };
         }
 
-        function getDependencyDisplay(dep) {
-            switch(parseInt(dep)) {
-                case 3: return '<span class="dependency-indicator dep-blocks">Bloqueia</span>';
-                case 1: return '<span class="dependency-indicator dep-depends">Dependente</span>';
-                default: return '<span class="dependency-indicator dep-none">Nenhuma</span>';
-            }
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return 'Sem prazo';
-            
-            const date = new Date(dateString);
-            const today = new Date();
-            
-            const taskDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            
-            const diffTime = taskDate - todayDate;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            const formattedDate = date.toLocaleDateString('pt-BR');
-            
-            if (diffDays < 0) {
-                return '<span class="date-overdue">' + formattedDate + ' (' + Math.abs(diffDays) + 'd atrasado)</span>';
-            } else if (diffDays === 0) {
-                return '<span class="date-today">' + formattedDate + ' (Hoje)</span>';
-            } else if (diffDays === 1) {
-                return '<span class="date-warning">' + formattedDate + ' (Amanhã)</span>';
-            } else if (diffDays <= 3) {
-                return '<span class="date-warning">' + formattedDate + ' (' + diffDays + 'd)</span>';
-            }
-            
-            return formattedDate;
-        }
-
-        function getStatusDisplay(status, taskId) {
-            const statusMap = {
+        function getStatusLabel(status) {
+            const map = {
                 'todo': { label: 'Para Fazer', class: 'status-todo' },
                 'doing': { label: 'Em Realização', class: 'status-doing' },
                 'done': { label: 'Realizado', class: 'status-done' }
             };
-            
-            const statusInfo = statusMap[status] || statusMap['todo'];
-            return '<span class="status-badge ' + statusInfo.class + '" onclick="toggleStatus(\'' + taskId + '\')">' + statusInfo.label + '</span>';
-        }
-
-        async function toggleStatus(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
-
-            let newStatus;
-            switch(task.status) {
-                case 'todo':
-                    newStatus = 'doing';
-                    break;
-                case 'doing':
-                    newStatus = 'done';
-                    break;
-                case 'done':
-                    newStatus = 'todo';
-                    break;
-                default:
-                    newStatus = 'todo';
-            }
-
-            try {
-                await db.collection('tasks').doc(taskId).update({
-                    status: newStatus
-                });
-            } catch (error) {
-                console.error('Erro ao atualizar status:', error);
-                alert('Erro ao atualizar status. Tente novamente.');
-            }
+            return map[status] || map['todo'];
         }
 
         async function addTask() {
@@ -649,32 +392,24 @@
             const dataEntrega = document.getElementById('dataEntrega').value;
 
             if (!cliente || !area || !criticidade || !descricao || !responsavel) {
-                alert('Por favor, preencha todos os campos obrigatórios!');
+                alert('Preencha todos os campos obrigatórios!');
                 return;
             }
 
             const score = calculateScore(criticidade, dependencia, descricao);
 
-            const taskData = {
-                cliente,
-                area,
-                criticidade: parseInt(criticidade),
-                dependencia: parseInt(dependencia),
-                descricao,
-                responsavel,
-                dataEntrega: dataEntrega || null,
-                score,
-                status: 'todo',
-                created: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            document.getElementById('addBtn').disabled = true;
-            document.getElementById('addBtn').textContent = 'Salvando...';
-
             try {
-                await db.collection('tasks').add(taskData);
-                
-                // Limpar formulário
+                await db.collection('tasks').add({
+                    cliente, area,
+                    criticidade: parseInt(criticidade),
+                    dependencia: parseInt(dependencia),
+                    descricao, responsavel,
+                    dataEntrega: dataEntrega || null,
+                    score,
+                    status: 'todo',
+                    created: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
                 document.getElementById('cliente').value = '';
                 document.getElementById('area').value = '';
                 document.getElementById('criticidade').value = '';
@@ -683,80 +418,79 @@
                 document.getElementById('responsavel').value = '';
                 document.getElementById('dataEntrega').value = '';
                 
-                alert('✅ Demanda adicionada com sucesso!');
+                alert('✅ Demanda adicionada!');
             } catch (error) {
-                console.error('Erro ao adicionar tarefa:', error);
-                alert('❌ Erro ao salvar. Tente novamente.');
-            } finally {
-                document.getElementById('addBtn').disabled = false;
-                document.getElementById('addBtn').textContent = 'Adicionar Demanda';
+                alert('❌ Erro ao salvar: ' + error.message);
+            }
+        }
+
+        async function toggleStatus(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const statusCycle = { 'todo': 'doing', 'doing': 'done', 'done': 'todo' };
+            const newStatus = statusCycle[task.status] || 'todo';
+            
+            try {
+                await db.collection('tasks').doc(taskId).update({ status: newStatus });
+            } catch (error) {
+                alert('Erro ao atualizar status');
             }
         }
 
         async function deleteTask(id) {
-            if (confirm('Tem certeza que deseja excluir esta demanda?')) {
+            if (confirm('Excluir esta demanda?')) {
                 try {
                     await db.collection('tasks').doc(id).delete();
-                    alert('✅ Demanda excluída com sucesso!');
+                    alert('✅ Demanda excluída!');
                 } catch (error) {
-                    console.error('Erro ao excluir:', error);
-                    alert('❌ Erro ao excluir. Tente novamente.');
+                    alert('Erro ao excluir');
                 }
             }
         }
 
         function updateDisplay() {
-            const activeTasks = tasks.filter(t => t.status !== 'done');
-            const completedTasks = tasks.filter(t => t.status === 'done');
+            const active = tasks.filter(t => t.status !== 'done');
+            const completed = tasks.filter(t => t.status === 'done');
             
-            activeTasks.sort((a, b) => {
+            active.sort((a, b) => {
                 if (a.status === 'doing' && b.status !== 'doing') return -1;
                 if (b.status === 'doing' && a.status !== 'doing') return 1;
                 return b.score - a.score;
             });
 
-            const sortedTasks = [...activeTasks, ...completedTasks];
-
+            const sorted = [...active, ...completed];
             const tbody = document.getElementById('tasksTable');
             tbody.innerHTML = '';
 
-            sortedTasks.forEach((task, index) => {
+            sorted.forEach((task, i) => {
+                const priority = getPriorityLabel(task.score);
+                const status = getStatusLabel(task.status);
                 const row = tbody.insertRow();
-                const priorityClass = getPriorityClass(task.score);
-                const priorityLabel = getPriorityLabel(task.score);
                 
                 if (task.status === 'done') {
                     row.style.opacity = '0.6';
                     row.style.background = '#f8f9fa';
                 }
 
-                row.innerHTML = 
-                    '<td><strong>#' + (index + 1) + '</strong></td>' +
-                    '<td><strong>' + task.cliente + '</strong></td>' +
-                    '<td><span class="area-tag">' + task.area + '</span></td>' +
-                    '<td><span class="priority-badge ' + priorityClass + '">' + priorityLabel + '</span></td>' +
-                    '<td>' + getDependencyDisplay(task.dependencia) + '</td>' +
-                    '<td class="description-cell" title="' + task.descricao + '">' + task.descricao + '</td>' +
-                    '<td><strong>' + task.responsavel + '</strong></td>' +
-                    '<td>' + formatDate(task.dataEntrega) + '</td>' +
-                    '<td class="score-display">' + task.score + '</td>' +
-                    '<td>' + getStatusDisplay(task.status, task.id) + '</td>' +
-                    '<td><div class="action-buttons"><button class="delete-btn" onclick="deleteTask(\'' + task.id + '\')">Excluir</button></div></td>';
+                row.innerHTML = `
+                    <td><strong>#${i + 1}</strong></td>
+                    <td>${task.cliente}</td>
+                    <td><span class="area-tag">${task.area}</span></td>
+                    <td><span class="priority-badge ${priority.class}">${priority.label}</span></td>
+                    <td style="max-width: 200px;">${task.descricao}</td>
+                    <td>${task.responsavel}</td>
+                    <td>${task.dataEntrega || '-'}</td>
+                    <td><strong>${task.score}</strong></td>
+                    <td><span class="status-badge ${status.class}" onclick="toggleStatus('${task.id}')">${status.label}</span></td>
+                    <td><button class="delete-btn" onclick="deleteTask('${task.id}')">Excluir</button></td>
+                `;
             });
 
-            updateStats();
-        }
-
-        function updateStats() {
-            const total = tasks.length;
-            const todo = tasks.filter(t => t.status === 'todo').length;
-            const doing = tasks.filter(t => t.status === 'doing').length;
-            const done = tasks.filter(t => t.status === 'done').length;
-
-            document.getElementById('totalTasks').textContent = total;
-            document.getElementById('todoTasks').textContent = todo;
-            document.getElementById('doingTasks').textContent = doing;
-            document.getElementById('doneTasks').textContent = done;
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('todoTasks').textContent = tasks.filter(t => t.status === 'todo').length;
+            document.getElementById('doingTasks').textContent = tasks.filter(t => t.status === 'doing').length;
+            document.getElementById('doneTasks').textContent = tasks.filter(t => t.status === 'done').length;
         }
 
         function exportToExcel() {
@@ -765,84 +499,21 @@
                 return;
             }
 
-            const exportData = tasks.map((task, index) => {
-                const activeTasks = tasks.filter(t => t.status !== 'done');
-                const completedTasks = tasks.filter(t => t.status === 'done');
-                activeTasks.sort((a, b) => {
-                    if (a.status === 'doing' && b.status !== 'doing') return -1;
-                    if (b.status === 'doing' && a.status !== 'doing') return 1;
-                    return b.score - a.score;
-                });
-                const sortedTasks = [...activeTasks, ...completedTasks];
-                const position = sortedTasks.findIndex(t => t.id === task.id) + 1;
-
-                return {
-                    'Posição': position,
-                    'Cliente': task.cliente,
-                    'Área': task.area,
-                    'Criticidade': getCriticalityText(task.criticidade),
-                    'Dependência': getDependencyText(task.dependencia),
-                    'Descrição': task.descricao,
-                    'Responsável': task.responsavel,
-                    'Data Limite': task.dataEntrega ? formatDateForExcel(task.dataEntrega) : 'Sem prazo',
-                    'Pontuação': task.score,
-                    'Status': getStatusText(task.status),
-                    'Data Criação': task.created.toLocaleDateString('pt-BR')
-                };
-            });
-
-            exportData.sort((a, b) => a.Posição - b.Posição);
+            const data = tasks.map((t, i) => ({
+                'Posição': i + 1,
+                'Cliente': t.cliente,
+                'Área': t.area,
+                'Pontuação': t.score,
+                'Descrição': t.descricao,
+                'Responsável': t.responsavel,
+                'Data Limite': t.dataEntrega || 'Sem prazo',
+                'Status': getStatusLabel(t.status).label
+            }));
 
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(exportData);
-
-            ws['!cols'] = [
-                {wch: 8}, {wch: 15}, {wch: 12}, {wch: 15}, {wch: 12},
-                {wch: 40}, {wch: 15}, {wch: 12}, {wch: 10}, {wch: 12}, {wch: 12}
-            ];
-
-            XLSX.utils.book_append_sheet(wb, ws, "Dashboard Priorização");
-
-            const today = new Date();
-            const fileName = 'Dashboard_Priorizacao_' + today.getFullYear() + '-' + 
-                            String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                            String(today.getDate()).padStart(2, '0') + '.xlsx';
-
-            XLSX.writeFile(wb, fileName);
-        }
-
-        function getCriticalityText(value) {
-            switch(value) {
-                case 10: return '🚨 Churn (10 pts)';
-                case 5: return 'Crítico (5 pts)';
-                case 3: return 'Alto (3 pts)';
-                case 1: return 'Normal (1 pt)';
-                default: return 'N/A';
-            }
-        }
-
-        function getDependencyText(value) {
-            switch(value) {
-                case 3: return 'Bloqueia outras tarefas (+3)';
-                case 1: return 'Depende de outra área (+1)';
-                case 0: return 'Sem dependência';
-                default: return 'N/A';
-            }
-        }
-
-        function getStatusText(status) {
-            switch(status) {
-                case 'todo': return 'Para Fazer';
-                case 'doing': return 'Em Realização';
-                case 'done': return 'Realizado';
-                default: return 'N/A';
-            }
-        }
-
-        function formatDateForExcel(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('pt-BR');
+            const ws = XLSX.utils.json_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "Demandas");
+            XLSX.writeFile(wb, 'Dashboard_Priorizacao.xlsx');
         }
     </script>
 </body>
